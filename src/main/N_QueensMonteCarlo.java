@@ -1,71 +1,77 @@
+/*
+* Marcos Garcia
+*
+* Using monte carlo algorithm to estimate efficiency
+* of using backtracking algorithm to solve the n-queens problem.
+*/
 package main;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class N_QueensMonteCarlo {
-    private int[] x; // Array will hold the column positions of queens, 1-based index
-    private int n;  // Size of the board and number of queens
-    int numNodes; // number of nodes aka columns visited
+    private int[] x;
+    private int n;
+    int numNodes;
 
     public N_QueensMonteCarlo(int n) {
         this.n = n;
-        this.x = new int[n + 1]; // Creating an array from 0 to n (0th index will be unused)
-        this.numNodes = 1;
+        this.x = new int[n + 1];
+        this.numNodes = 0;
         N_queensB(1, n);
     }
 
-    private void N_queensB(int k, int n) {
+    private void N_queensB(int column, int n) {
+        int m = 1;
+        int mprod = 1;
+        int i = 1;
 
-        List<Integer> promisingState =  new ArrayList<>(); // list of promising states
-        for (int i = 1; i <= n; i++) { // Iterate over all columns from 1 to n
-            numNodes++;
-            if (promising(k, i)) {
-                x[k] = i; // Place queen at position [k, i]
-                if(k==n) {
-                    printSolution();
-                } else {
-                    N_queensB(k + 1, n); // Move to the next row
+        while (m != 0 && i <= n) {
+            mprod *= m;
+            numNodes += mprod * n;
+            List<Integer> promChildren = new ArrayList<>();
+            m = 0;
+            for (int j = 1; j <= n; j++) {
+                if (promising(i, j)) {
+                    m++;
+                    promChildren.add(j);
                 }
-
             }
+            if (!promChildren.isEmpty()) {
+                Collections.shuffle(promChildren);
+                x[i] = promChildren.get(0);
+            }
+            i++;
         }
     }
 
-    private boolean promising(int k, int i) {
-        for (int j = 1; j < k; j++) { // Check all previous rows for conflicts
-            if (x[j] == i || // Same column
-                    Math.abs(x[j] - i) == Math.abs(j - k)) { // Same diagonal
+    private boolean promising(int column, int i) {
+        for (int j = 1; j < column; j++) {
+            if (x[j] == i || Math.abs(x[j] - i) == Math.abs(j - column)) {
                 return false;
             }
         }
         return true;
     }
 
-    private void printSolution() {
-        System.out.println("One of the solutions:");
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (x[i] == j) {
-                    System.out.print("Q ");
-                } else {
-                    System.out.print("- ");
-                }
-            }
-            System.out.println();
+    public void MonteCarlo(int count) {
+        double total = 0;
+        for (int i = 1; i <= count; i++) {
+            x = new int[n+1];
+            numNodes = 0;
+            N_queensB(1,n);
+            total += numNodes;
+            System.out.println("Test: " + i + ".) nodes visited: " + numNodes);
         }
-        System.out.println();
-        System.out.println(numNodes);
-    }
-
-    private int run_MonteCarlo() {
-
-        return numNodes;
+        System.out.println("Average nodes visited: " + total / count);
     }
 
     public static void main(String[] args) {
-        int n = 4; // Solving 8-Queens problem
+        int n = 12;
+        int count = 20;
         N_QueensMonteCarlo solver = new N_QueensMonteCarlo(n);
+        solver.MonteCarlo(count);
 
     }
 }
